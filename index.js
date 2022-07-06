@@ -1,4 +1,5 @@
-import { SymbolTable } from "./SymbolTable.js";
+import { SymbolTable } from './SymbolTable.js';
+import { Parser } from './Parser.js';
 
 /*****************
  * Pre iteration
@@ -35,18 +36,20 @@ sym.addSymbols([
 /**************
  * First pass
  **************/
+// Initialise the parser with the source file
+const parser = new Parser('./asm/Max.asm');
 // Iterate through lines from the parser
 // Should return command object with `type` "A"|"C"|"PSEUDO"
 // "A" contains a `value` as a string (label) or number (address)
 // "C" contains `comp` and optionally `jump` and `dest`
-// "PSEUDO" contains a `label` and corresponding value to be added to the symbol table
+// "PSEUDO" contains a `label` to be used with the symbol table
 // Only concerned with `PSEUDO` here, add the symbols to the table
 /***************
  * Second pass
  ***************/
 // Iterate through lines from the parser
 // = "A" command =====
-// If `value` is a number, get the address from the symbol table
+// If `value` is a string, get the address from the symbol table
 //    (Symbol table should add any new symbols from 16)
 // Get the machine code and append it to the output
 // = "C" command =====

@@ -6,19 +6,19 @@ class SymbolTable {
 
   addSymbol = (symbol) => {
     symbols.push(symbol);
-  }
+  };
 
   addSymbols = (symbols) => {
     symbols.push(...symbols);
     console.log(symbols);
-  }
+  };
 
   getAddress = (symbol) => {
-    const existingSymbol = symbols.find(sym => sym.symbol === symbol);
-    
+    const existingSymbol = symbols.find((sym) => sym.symbol === symbol);
+
     if (existingSymbol) {
       return existingSymbol.address;
-    };
+    }
 
     symbols.push({
       symbol,
@@ -27,7 +27,7 @@ class SymbolTable {
 
     next += 1;
     return symbols[symbols.length - 1].address;
-  }
+  };
 }
 
-export { SymbolTable }
+export { SymbolTable };
