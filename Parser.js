@@ -1,11 +1,14 @@
 import { createInterface } from 'readline';
 import { createReadStream } from 'fs';
+import { once } from 'events';
 
 class Parser {
-  constructor(input) {
+  constructor() {
     this.source = [];
     this.count = 0;
+  }
 
+  init = async (input) => {
     const lineStream = createInterface({
       input: createReadStream(input),
       crlfDelay: Infinity,
@@ -14,10 +17,13 @@ class Parser {
     lineStream.on('line', (line) => {
       const instructionObject = this.parseLine(line);
       if (instructionObject) {
-        console.log(instructionObject);
         this.source.push(instructionObject);
       }
     });
+
+    await once(lineStream, 'close');
+
+    this.count = 0;
   }
 
   parseLine = (line) => {
@@ -41,6 +47,7 @@ class Parser {
           return {
             type: 'PSEUDO',
             label: filteredLine.match(/\((.*)\)/)[1],
+            address: this.count,
           };
         default:
           // C instruction

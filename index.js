@@ -1,9 +1,16 @@
+import { writeFile } from 'fs';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+
 import { SymbolTable } from './SymbolTable.js';
 import { Parser } from './Parser.js';
+import { Code } from './Code.js';
 
 /*****************
  * Pre iteration
  *****************/
+// Initialise the output
+const output = [];
 // Initialise a symbol table
 const sym = new SymbolTable();
 // Populate with predefined symbols
@@ -33,29 +40,58 @@ sym.addSymbols([
   { symbol: 'KBD', address: 24576 },
 ]);
 
+// Initialise the code class
+const code = new Code();
+
+// Process the input
+const { input } = yargs(hideBin(process.argv)).argv;
+
+// Initialise the parser with the source file
+const parser = new Parser();
+await parser.init(input);
+
 /**************
  * First pass
  **************/
-// Initialise the parser with the source file
-const parser = new Parser('./asm/Max.asm');
 // Iterate through lines from the parser
+parser.source.forEach(instruction => {
 // Should return command object with `type` "A"|"C"|"PSEUDO"
 // "A" contains a `value` as a string (label) or number (address)
 // "C" contains `comp` and optionally `jump` and `dest`
 // "PSEUDO" contains a `label` to be used with the symbol table
 // Only concerned with `PSEUDO` here, add the symbols to the table
+  if (instruction.type === 'PSEUDO') {
+    sym.addSymbol({ symbol: instruction.label, address:instruction.address });
+  };
+});
+
 /***************
  * Second pass
  ***************/
 // Iterate through lines from the parser
-// = "A" command =====
-// If `value` is a string, get the address from the symbol table
-//    (Symbol table should add any new symbols from 16)
-// Get the machine code and append it to the output
-// = "C" command =====
-// Get the machine code and append it to the output
-// Skip any "PSEUDO" commands
+parser.source.forEach(instruction => {
+  switch (instruction.type) {
+    // = "A" command =====
+    case 'A':
+      // If `value` is a string, get the address from the symbol table
+      instruction.value = sym.getAddress(instruction.value);
+      // No break, can now be treated the same as a...
+    // = "C" command =====
+    case 'C':
+      // Get the machine code and append it to the output
+      output.push(code.getMachineCode(instruction));
+      break;
+    default:
+      // Skip any "PSEUDO" commands
+      break;
+  }
+});
 /******************
  * Post iteration
  ******************/
 // Save the output
+writeFile(input.replace('.asm', '.hack'), output.join('\r\n'), (err) => {
+  if (err) {
+    console.error(err);
+  }
+});

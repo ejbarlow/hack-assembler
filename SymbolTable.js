@@ -5,28 +5,30 @@ class SymbolTable {
   }
 
   addSymbol = (symbol) => {
-    symbols.push(symbol);
+    this.symbols.push(symbol);
   };
 
   addSymbols = (symbols) => {
-    symbols.push(...symbols);
-    console.log(symbols);
+    this.symbols.push(...symbols);
   };
 
   getAddress = (symbol) => {
-    const existingSymbol = symbols.find((sym) => sym.symbol === symbol);
+    if (!isNaN(symbol)) {
+      return parseInt(symbol);
+    }
+    const existingSymbol = this.symbols.find((sym) => sym.symbol === symbol);
 
     if (existingSymbol) {
       return existingSymbol.address;
     }
 
-    symbols.push({
+    this.addSymbol({
       symbol,
-      address: next,
+      address: this.next,
     });
 
-    next += 1;
-    return symbols[symbols.length - 1].address;
+    this.next += 1;
+    return this.symbols[this.symbols.length - 1].address;
   };
 }
 
